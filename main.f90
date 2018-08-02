@@ -25,13 +25,16 @@ module global_variables
 
   integer,parameter :: ndelay = 120
   real(8),parameter :: Tdelay_i  = -30d0*fs
-  real(8),parameter :: T_delay_f = 30d0*fs
+  real(8),parameter :: Tdelay_f = 30d0*fs
+  real(8) :: Tdelay
 
-  integer,parameter :: Ne = 200
+  integer,parameter :: NEkin = 200
   real(8),parameter :: Ekin_i = 10d0*ev
   real(8),parameter :: Ekin_f = 40d0*ev
-  real(8),parameter :: dEkin = (Ekin_f - Ekin_i)/Ne
-  real(8) :: PES_yield(0:ne)
+  real(8),parameter :: dEkin = (Ekin_f - Ekin_i)/NEkin
+  real(8) :: PES_yield(0:NEkin)
+
+  integer,parameter :: Ncos
 
 end module global_variables
 !-------------------------------------------------------------------------------
@@ -42,6 +45,7 @@ program main
 
   call set_parameters
 
+  call calc_pes
 
 end program main
 !-------------------------------------------------------------------------------
@@ -54,6 +58,34 @@ subroutine set_parameters
 
 end subroutine set_parameters
 !-------------------------------------------------------------------------------
+subroutine calc_pes
+  use global_variables
+  implicit none
+  integer :: it_delay, iekin, icos
+  real(8) :: Ekin, cos_theta
+  real(8) :: pop
+
+  do it_delay = 0, ndelay
+    Tdelay = Tdelay_i + it_delay*(Tdelay_f - Tdelay_i)/dble(ndelay)
+    PES_yield = 0d0
+
+    do iekin = 0, NEkin
+      Ekin = Ekin_i + iekin*(Ekin_f - Ekin_i)/NEkin
+
+      do icos = 0, Ncos
+        cos_theta = -1d0 + 2d0*icos/dble(Ncos)
+        call calc_pes_population(Ekin, cos_theta, pop)
+        PES_yield(iekin) = PES_yield(iekin) + pop
+      end do
+
+    end do
+  end do
+    
+
+
+  end do
+
+end subroutine calc_pes
 !-------------------------------------------------------------------------------
 !-------------------------------------------------------------------------------
 !-------------------------------------------------------------------------------
