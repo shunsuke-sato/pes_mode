@@ -11,15 +11,18 @@ module global_variables
 
   real(8),parameter :: Ip = 21d0*ev
 
+  integer :: nt
   real(8) :: Tprop
   real(8) :: dt_ini
   real(8) :: dt
   real(8) :: tt_i, tt_f
 
+  real(8),allocatable :: A_IR(:)
   real(8),parameter :: T_IRpulse = 30d0*fs
   real(8),parameter :: omega_IRpulse = 1.55d0*ev
   real(8),parameter :: E0_IRpulse = 5.338d-9*sqrt(1d12) ! W/cm2
 
+  real(8),allocatable :: E_EUV(:)
   real(8),parameter :: T_EUVpulse = 30d0*fs
   real(8),parameter :: omega_EUVpulse = 27d0*1.55d0*ev
 
@@ -67,6 +70,8 @@ subroutine calc_pes
 
   do it_delay = 0, ndelay
     Tdelay = Tdelay_i + it_delay*(Tdelay_f - Tdelay_i)/dble(ndelay)
+    call laser_init
+
     PES_yield = 0d0
 
     do iekin = 0, NEkin
@@ -79,14 +84,42 @@ subroutine calc_pes
       end do
 
     end do
+
+    call laser_fin
+
   end do
     
 
 
   end do
-
 end subroutine calc_pes
 !-------------------------------------------------------------------------------
+subroutine laser_init
+  use global_variables
+  implicit none
+  integer :: it
+  real(8) :: xx
+
+  tt_i = min(-0.5d0*T_IRpulse, -0.5d0*T_EUVpulse + Tdelay)
+  tt_f = max(0.5d0*T_IRpulse, 0.5d0*T_EUVpulse + Tdelay)
+  Tprop = tt_f - tt_i
+  nt = aint(Tprop/dt_ini) + 1
+  dt = Tprop/nt
+
+  allocate(A_IR(0:nt), E_EUV(0:nt))
+  A_IR = 0d0; E_EUV = 0d0
+  
+! IR field  
+  do it = 0, nt
+    xx = tt_i + dt*it - 0.5d0*T_IRpulse
+
+
+  end do
+
+
+
+
+end subroutine laser_init
 !-------------------------------------------------------------------------------
 !-------------------------------------------------------------------------------
 !-------------------------------------------------------------------------------
