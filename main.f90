@@ -112,15 +112,30 @@ subroutine laser_init
 ! IR field  
   do it = 0, nt
     xx = tt_i + dt*it - 0.5d0*T_IRpulse
-
-
+    if(abs(xx) < 0.5d0*T_IRpulse)then
+      A_IR(it) = -E0_IRpulse/omega_IRpulse*sin(omega_IRpulse*xx) &
+        *cos(pi*xx/T_IRpulse)**4
+    end if
   end do
 
-
+! EUV field  
+  do it = 0, nt
+    xx = tt_i + dt*it - 0.5d0*T_IRpulse - Tdelay
+    if(abs(xx) < 0.5d0*T_EUVpulse)then
+      E_EUV(it) = sin(omega_EUVpulse*xx)*cos(pi*xx/T_EUVpulse)**4
+    end if
+  end do
 
 
 end subroutine laser_init
 !-------------------------------------------------------------------------------
+subroutine laser_fin
+  use global_variables
+  implicit none
+
+  deallocate(A_IR, E_EUV))
+
+end subroutine laser_fin
 !-------------------------------------------------------------------------------
 !-------------------------------------------------------------------------------
 !-------------------------------------------------------------------------------
